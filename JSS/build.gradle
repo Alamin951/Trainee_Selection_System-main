@@ -50,6 +50,10 @@ dependencies {
 	// Spring Boot Mail
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
+	//testing
+	testImplementation 'junit:junit:4.13.2'
+	testImplementation 'org.mockito:mockito-core:3.12.4'
+
 
 }
 

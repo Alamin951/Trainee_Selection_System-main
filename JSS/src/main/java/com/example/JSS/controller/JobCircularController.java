@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("job_circular")
+@RequestMapping("/job_circular")
 @RequiredArgsConstructor
 public class JobCircularController {
     private final JobCircularService jobCircularService;

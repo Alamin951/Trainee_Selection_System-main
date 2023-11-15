@@ -18,24 +18,42 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationProvider authenticationProvider;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                .cors()
+                .and()
                 .csrf()
                 .disable()
                 .authorizeHttpRequests()
-                .requestMatchers("/**")
-//                .requestMatchers("/user/**","/api-docs/**","/applications","/job_circular","/evaluator")
+                .requestMatchers("/user/register", "/user/login", "/applicants/register")
                 .permitAll()
-                /*.and()
-                .authorizeHttpRequests()
-                .requestMatchers(HttpMethod.POST, "/applicants")
-                .permitAll()*/
-                /*.requestMatchers("/books/create","/books/update/**","/books/delete/**")
-                .hasAuthority("ad,om")
-                .requestMatchers("/books/all","/books/id/**","/books/author-title/**","/books/author/**")
-                .hasAnyAuthority("admin","applicant")
+
+                .requestMatchers(HttpMethod.GET, "/job_circular")
+                .hasAnyAuthority("applicant", "admin")
+                .requestMatchers(HttpMethod.POST, "/applications")
+                .hasAnyAuthority("applicant", "admin")
+                .requestMatchers(HttpMethod.GET, "/admit-card/{applicantId}")
+                .hasAnyAuthority("applicant", "admin")
+
+                .requestMatchers("/applicants", "/applications", "/applications/all", "/applications/update-status", "/applications/final-candidate", "/evaluator", "/job_circular/**", "/status", "/status/{status}")
+                .hasAuthority("admin")
+
+
+                .requestMatchers("/applicants/{id}", "/applications/pending/{id}", "/approval/pending/{approvalId}")
+                .hasAuthority("applicant")
+
+                .requestMatchers("/applicants", "/applications/applicant/{id}", "/notices")
+                .hasAnyAuthority("admin", "applicant")
+
+                .requestMatchers("/written_mark","/answerSheet/{evaluatorId}")
+                .hasAuthority("evaluator")
+
+
+                .requestMatchers("/notices/global", "/notices/applicant/{userId}")
+                .hasAnyAuthority("admin", "applicant", "evaluator")
                 .anyRequest()
                 .authenticated()
                 .and()
@@ -43,8 +61,7 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);*/
-        ;
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
 
         return http.build();

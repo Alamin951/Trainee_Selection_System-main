@@ -29,15 +29,4 @@ public class AdmitCardController {
         return ResponseEntity.ok(admitCard);
     }
 
-    /*@PostMapping
-    ResponseEntity<?> generateAdmitCard(@RequestBody List<Long> applicationIds){
-            List<AdmitCardDto> admitCards = admitCardService.generateAdmitCards(applicationIds);
-            return ResponseEntity.ok(admitCards);
-    }*/
-
-//    @GetMapping("/{applicationId}")
-//    public ResponseEntity<?> getAdmitCardByApplicationId(@PathVariable Long applicationId) {
-//        AdmitCardDto admitCardDto = admitCardService.getAdmitCardByApplicationId(applicationId);
-//            return ResponseEntity.ok(admitCardDto);
-//    }
 }

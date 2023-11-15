@@ -16,7 +16,7 @@ import java.util.Optional;
 public class ApplicantsController {
     private final ApplicantsService applicantsService;
 
-    @PostMapping
+    @PostMapping("/register")
     public ResponseEntity<ApplicantsDto> createApplicants(@RequestBody ApplicantsDto applicantsDto){
         ApplicantsDto createApplicant = applicantsService.createApplicant(applicantsDto);
 
@@ -42,10 +42,5 @@ public class ApplicantsController {
         return ResponseEntity.ok(updatedApplicant);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteApplicant(@PathVariable("id") Long id) {
-        applicantsService.deleteApplicant(id);
-        return ResponseEntity.noContent().build();
-    }
 
 }

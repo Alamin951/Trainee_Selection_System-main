@@ -22,18 +22,13 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    private <T> T extractClaim(String token, Function<Claims,T> claimResolver){
+    public  <T> T extractClaim(String token, Function<Claims, T> claimResolver) {
         final Claims claims = extractAllClaims(token);
         return claimResolver.apply(claims);
     }
 
-    private Claims extractAllClaims(String token){
-        return Jwts
-                .parserBuilder()
-                .setSigningKey(getSignKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+    private Claims extractAllClaims(String token) {
+        return Jwts.parserBuilder().setSigningKey(getSignKey()).build().parseClaimsJws(token).getBody();
     }
 
     private Key getSignKey() {
@@ -41,24 +36,43 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyByte);
     }
 
-    public  String generateToken(UserDetails userDetails){
-        return generateToken(new HashMap<>(),userDetails);
-    }
+    public String generateToken(String role, Long userId, UserDetails userDetails) {
+        Claims claims = Jwts.claims();
+        claims.put("role", role);
+        claims.put("userId", userId);
 
-    public String generateToken(
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
+                .signWith(getSignKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+    /*public String extractRole(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(SECRET_KEY)
+                .parseClaimsJws(token)
+                .getBody();
+
+        return (String) claims.get("role");
+    }*/
+
+    /*public String generateToken(
             Map<String, Object> extraClaims,
             UserDetails userDetails
     ){
+
         return Jwts
                 .builder()
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 *60 *24))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 *60 *60*24))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
 
-    }
+    }*/
 
     public  boolean isTokenValid(String token,UserDetails userDetails){
         final String username = extractUserEmail(token);

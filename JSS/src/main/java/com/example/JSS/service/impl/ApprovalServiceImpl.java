@@ -56,11 +56,7 @@ public class ApprovalServiceImpl implements ApprovalService {
             answerSheetService.createAnswerSheetByApplicationID(approvals.getApplicationId());
             approvalRepository.save(approvals);
             admitCardService.generateAdmitCard(approvals.getApplicationId());
-        } catch (EntityNotFoundException e) {
-            // Handle the case where no Approvals entity is found for the given approvalId
-            throw new IllegalArgumentException("Invalid approvalId: " + approvalId, e);
         } catch (Exception e) {
-            // Handle any other unexpected exceptions
             throw new RuntimeException("An error occurred while accepting the approval.", e);
         }
     }
@@ -69,13 +65,9 @@ public class ApprovalServiceImpl implements ApprovalService {
     public List<PendingApprovalDto> getPendingApproval(List<Long> applicationId){
         List<Approvals> approvalsList = approvalRepository.findByApplicationIdInAndStatus(applicationId, false);
 
-        // Map the filtered Approvals entities to a list of PendingApprovalDto objects
-        List<PendingApprovalDto> pendingApprovalDtos = approvalsList.stream()
+        return approvalsList.stream()
                 .map(approval -> new PendingApprovalDto(approval.getApprovalId(), approval.getApplicationId()))
                 .collect(Collectors.toList());
-
-        // Return the list of PendingApprovalDto objects
-        return pendingApprovalDtos;
     }
 
 

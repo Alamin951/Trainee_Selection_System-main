@@ -13,7 +13,6 @@ public interface ApplicantsService {
     Optional<ApplicantsDto> getApplicantById(Long applicantId);
     ApplicantsDto createApplicant(ApplicantsDto applicantsDto);
     ApplicantsDto updateApplicant(Long applicantId, ApplicantsDto applicantsDto);
-    void deleteApplicant(Long applicantId);
 
 
 }

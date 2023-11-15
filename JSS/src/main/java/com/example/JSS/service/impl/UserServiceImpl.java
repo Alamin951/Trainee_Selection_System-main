@@ -52,13 +52,15 @@ public class UserServiceImpl implements UserService {
                 loginRequest.getEmail(),
                 loginRequest.getPassword()
         ));
-        String jwtToken = jwtService.generateToken(userDetailsService.loadUserByUsername(loginRequest.getEmail()));
+
+
         Users currentUser = userRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(()-> new EntityNotFoundException("User does not exist!!!!"));
         if(currentUser.getRole().equals("applicant")){
             Applicants currentApplicant = applicantsRepository.findByEmail(currentUser.getEmail());
             currentUser.setUserId(currentApplicant.getApplicantId());
         }
+        String jwtToken = jwtService.generateToken(currentUser.getRole(),currentUser.getUserId(), userDetailsService.loadUserByUsername(loginRequest.getEmail()));
 
         return LoginResponse.builder()
                 .token(jwtToken)

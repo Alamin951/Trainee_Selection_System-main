@@ -8,6 +8,7 @@ import com.example.JSS.model.RegisterResponse;
 import com.example.JSS.repository.UsersRepository;
 import com.example.JSS.service.EvaluatorService;
 import com.example.JSS.service.UserService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,9 @@ public class EvaluatorServiceImpl implements EvaluatorService {
     @Override
     public List<EvaluatorResponse> getAllEvaluator() {
         List<Users> evaluators = usersRepository.findByRole("evaluator");
+        if(evaluators.isEmpty()){
+            throw new EntityNotFoundException("NOT_AVAILABLE");
+        }
         return evaluators.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());

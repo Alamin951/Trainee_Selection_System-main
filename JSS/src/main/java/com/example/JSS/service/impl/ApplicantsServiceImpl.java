@@ -12,6 +12,8 @@ import com.example.JSS.repository.ApplicantsRepository;
 import com.example.JSS.repository.UsersRepository;
 import com.example.JSS.service.ApplicantsService;
 import com.example.JSS.service.UserService;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -25,7 +27,6 @@ import java.util.stream.Collectors;
 public class ApplicantsServiceImpl implements ApplicantsService {
     private final ApplicantsRepository applicantsRepository;
     private final UserService userService;
-    private final UsersRepository usersRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -39,17 +40,22 @@ public class ApplicantsServiceImpl implements ApplicantsService {
     @Override
     public Optional<ApplicantsDto> getApplicantById(Long applicantId) {
         Optional<Applicants> optionalApplicant = applicantsRepository.findById(applicantId);
+        if (optionalApplicant.isEmpty()){
+            throw new EntityNotFoundException("INVALID_APPLICANT");
+        }
         return optionalApplicant.map(this::toDto);
     }
 
     @Override
+    @Transactional
     public ApplicantsDto createApplicant(ApplicantsDto applicantsDto) {
         Applicants existingApplicant= applicantsRepository.findByEmail(applicantsDto.getEmail());
-        //Custom exception.
+        if(existingApplicant!=null){
+            throw new IllegalArgumentException("ALREADY_EXIST!!!");
+        }
         Applicants applicant = modelMapper.map(applicantsDto, Applicants.class);
         Applicants createdApplicant = applicantsRepository.save(applicant);
 
-        // Create the user
         UsersDto userDto = modelMapper.map(applicantsDto, UsersDto.class);
         userDto.setRole("applicant");
         RegisterRequest registerRequest= modelMapper.map(userDto, RegisterRequest.class);
@@ -69,10 +75,7 @@ public class ApplicantsServiceImpl implements ApplicantsService {
         throw new IllegalArgumentException("Applicant with ID " + applicantId + " not found");
     }
 
-    @Override
-    public void deleteApplicant(Long applicantId) {
-        applicantsRepository.deleteById(applicantId);
-    }
+
 
 
     private ApplicantsDto toDto(Applicants applicant) {

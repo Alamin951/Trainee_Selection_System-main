@@ -1,19 +1,14 @@
 package com.example.JSS.service.impl;
 
-import com.example.JSS.dto.ApplicationsDto;
-import com.example.JSS.dto.FinalCandidateResponseDto;
-import com.example.JSS.dto.PendingApprovalDto;
-import com.example.JSS.dto.PendingApprovalResponseDto;
+import com.example.JSS.dto.*;
 import com.example.JSS.entity.*;
 import com.example.JSS.repository.ApplicantsRepository;
 import com.example.JSS.repository.ApplicationsRepository;
 import com.example.JSS.repository.JobCircularRepository;
 import com.example.JSS.repository.marking.MarksRepository;
-import com.example.JSS.service.ApplicationsService;
-import com.example.JSS.service.ApprovalService;
-import com.example.JSS.service.NoticeService;
-import com.example.JSS.service.StatusService;
+import com.example.JSS.service.*;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -34,6 +29,8 @@ public class ApplicationsServiceImpl implements ApplicationsService {
     private final ApprovalService approvalService;
     private final MarksRepository marksRepository;
     private final NoticeService noticeService;
+    private final MailService mailService;
+
 
     @Override
     public Applications createApplication(ApplicationsDto applicationsDto) {
@@ -45,6 +42,10 @@ public class ApplicationsServiceImpl implements ApplicationsService {
         if(existingApplications.isPresent()){
             throw new IllegalArgumentException("Already applied!!!");
         }
+        Date now = new Date();
+        if (jobCircular.getApplicationDeadline().before(now)){
+            throw new IllegalArgumentException("Application_TIMEEXPIRED");
+        }
         Status status =  statusService.getStatusByStatusName("Applicant");
         Applications applications= modelMapper.map(applicationsDto, Applications.class);
         applications.setStatus(status);
@@ -55,6 +56,7 @@ public class ApplicationsServiceImpl implements ApplicationsService {
     }
 
     @Override
+    @Transactional
     public Applications updateApplications(Long applicationId, String status) {
         Applications application= applicationsRepository.findById(applicationId)
                 .orElseThrow(()-> new IllegalArgumentException("Application not Available!!!"));
@@ -64,6 +66,12 @@ public class ApplicationsServiceImpl implements ApplicationsService {
         // send notification
         noticeService.createNotice(application, "You have been selected for "+status);
         Applications updatedApplication = applicationsRepository.save(application);
+        Applicants applicants= applicantsRepository.findById(application.getApplicantId()).orElseThrow();
+        MailDto mailDto = new MailDto();
+        mailDto.setRecipient(applicants.getEmail());
+        mailDto.setSubject("you have been selected for "+ status);
+        mailDto.setBody("Thanks for getting selected for this role. we will contact you very shortly!");
+        mailService.sendMail(mailDto);
 
         if (!Objects.equals(previousStatus.getStatusId(), newStatus.getStatusId())) {
             if (newStatus.getStatusId() == 2) {
